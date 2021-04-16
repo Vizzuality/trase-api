@@ -13,6 +13,11 @@
   transform: translate(0, 0);
   transition: transform 1s ease;
   z-index: $z-base;
+  cursor: default;
+
+  &.-loading-cursor {
+    cursor: loading;
+  }
 
   .overlays {
     z-index: $z-nav;

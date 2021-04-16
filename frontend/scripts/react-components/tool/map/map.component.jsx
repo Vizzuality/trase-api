@@ -70,6 +70,7 @@ function MapBoxMap(props) {
   const [updatedTooltipValues, updateTooltipValues] = useState(tooltipValues);
   const [mapAttribution, setMapAttribution] = useState(null);
   const [tooltipData, setTooltip] = useState(null);
+  const [loadingCursor, setLoadingCursor] = useState(null);
 
   const layerIds = unitLayers && unitLayers.map(u => u.id);
   const sourceLayer = unitLayers && unitLayers[0] && capitalize(countryName);
@@ -149,9 +150,25 @@ function MapBoxMap(props) {
     darkBasemap
   );
 
+  // Fetch Node to get tooltip data
+  const fetchHoveredNodeData = () => {
+    setLoadingCursor(true);
+    // Fetch node
+  };
+
   // Start Tooltip values
   useEffect(() => {
     if (tooltipValues) {
+      setLoadingCursor(false);
+      if (tooltipValues.length === 0) {
+        const hoveredId = hoveredGeo.last.id;
+        setTimeout(() => {
+          if (hoveredGeo.last.id === hoveredId) {
+            fetchHoveredNodeData(hoveredId);
+          }
+        }, 300);
+      }
+
       updateTooltipValues(tooltipValues);
     }
     return undefined;
@@ -191,6 +208,7 @@ function MapBoxMap(props) {
       event,
       map,
       setTooltip,
+      setLoadingCursor,
       sourceLayer,
       layerIds,
       highlightedNodesData,
@@ -213,6 +231,7 @@ function MapBoxMap(props) {
 
   const orderedLayers = layers.map(l => ({ ...l, zIndex: layerOrder[l.id] }));
   const minimized = toolLayout === TOOL_LAYOUT.right;
+  const getCursor = useCallback(() => (loadingCursor ? 'progress' : 'default'), [loadingCursor]);
 
   return (
     <div
@@ -241,6 +260,7 @@ function MapBoxMap(props) {
           [-89, -180],
           [89, 180]
         ]}
+        getCursor={getCursor}
         onClick={onClick}
         onHover={onHover}
         transitionInterpolator={new FlyToInterpolator()}
